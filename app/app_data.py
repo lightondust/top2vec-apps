@@ -145,7 +145,7 @@ def jp_tokenizer(txt):
 
 def jp_tokenizer_noun(txt):
     sudachi_tokenizer = SudachiTokenizer()
-    return sudachi_tokenizer.wakati(txt).split()
+    return sudachi_tokenizer.wakati(txt)
 
 
 def get_app_data(page_class):

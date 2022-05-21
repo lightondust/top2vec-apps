@@ -64,7 +64,6 @@ class SudachiTokenizer(object):
                 raise e
 
     def wakati(self, txt, auto_split=True):
-        # tk_list = list(self.tokenizer_obj.tokenize(txt, self.mode))
         tk_list = self.tokenize(txt, auto_split=auto_split)
 
         words = []
