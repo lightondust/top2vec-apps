@@ -8,11 +8,13 @@ class TopicPage(BasePage):
 
     def __init__(self, app_data, **kwargs):
         super().__init__(app_data, **kwargs)
-        self.num_res = None
         st.title(TopicPage.title)
-        self.topic_no = None
-        self.top2vec_model = None
-        self.model = None
+        self.num_res = None
+        self.function_map = {
+            self.function_topic_detail_key: self.view_topic,
+            self.function_search_by_words_key: self.search_topic_by_words,
+            self.function_search_by_text_key: self.search_topic_by_text
+        }
 
     def topic_info(self, topic_selected):
         fig = self.model.generate_topic_wordcloud(topic_selected)
@@ -24,12 +26,13 @@ class TopicPage(BasePage):
         st.dataframe(topic_df)
 
     def view_topic(self):
-
-        st.markdown('### view topic')
         topic_selected = st.selectbox('topic:', [''] + list(range(self.topic_no)))
+        topic_selected = self.app_url.sync_variable('topic', topic_selected, '')
+        st.markdown('#### topic: {}'.format(topic_selected))
 
         if topic_selected != '':
-            st.write(self.top2vec_model.topic_sizes[topic_selected])
+            topic_selected = int(topic_selected)
+            st.write('topic size: {}'.format(self.top2vec_model.topic_sizes[topic_selected]))
             self.topic_info(topic_selected)
 
             documents, document_scores, document_ids = self.top2vec_model.search_documents_by_topic(topic_num=topic_selected,
@@ -50,7 +53,7 @@ class TopicPage(BasePage):
     def view_topic_list(self, topic_nums, topic_words, topic_scores):
         for topic, words, score in zip(topic_nums, topic_words, topic_scores):
             st.markdown('#### Topic {}, {:.2f}: {}'.format(topic, score, ','.join(words[:5])))
-            # st.write(','.join(words[:5]))
+            st.markdown(self.topic_link(topic))
             if_detail = st.checkbox('detail', key='topic-{}'.format(topic))
             if if_detail:
                 st.write('detail')
@@ -69,23 +72,4 @@ class TopicPage(BasePage):
             self.view_topic_list(topic_nums, topic_words, topic_scores)
 
     def run(self):
-        self.num_res = st.slider('number of results:', 0, 100, 10, 1)
-        self.num_res = int(self.num_res)
-
-        model_name_selected = st.selectbox('model:', self.app_data.model_map.keys())
-        if model_name_selected in self.app_data.model_map:
-            self.model = self.app_data.model_map[model_name_selected]
-            self.top2vec_model = self.model.top2vec_model
-            self.word_list = list(self.top2vec_model.word_indexes.keys())
-
-            self.topic_no = self.top2vec_model.get_num_topics()
-            st.markdown('## total topic no: {}'.format(self.topic_no))
-
-            func = st.radio('function:', ['topic details', 'search topic by words', 'search topic by text'])
-
-            if func == 'topic details':
-                self.view_topic()
-            elif func == 'search topic by words':
-                self.search_topic_by_words()
-            elif func == 'search topic by text':
-                self.search_topic_by_text()
+        super().run()

@@ -1,9 +1,10 @@
 import streamlit as st
 
 from app_url import AppURL
-from page.template_page import TemplatePage
 from page.main_page import MainPage
 from page.topic_page import TopicPage
+from page.document_page import DocumentPage
+from page.word_page import WordPage
 from app_data import get_app_data
 import logging
 
@@ -22,7 +23,8 @@ def _get_app_data(page_class):
 page_class = {
     'Main page': MainPage,
     'Topic page': TopicPage,
-    'Template page': TemplatePage
+    'Document page': DocumentPage,
+    'Word page': WordPage,
 }
 page_selected = st.sidebar.radio('page:', list(page_class.keys())+[''], index=len(page_class))
 

@@ -78,7 +78,6 @@ class BaseModel(object):
             WordCloud(width=1600,
                       height=400,
                       background_color=background_color, **additional_input).generate_from_frequencies(word_score_dict))
-        plt.title("Topic " + str(topic_num), loc='left', fontsize=25, pad=20)
         return fig
 
 
