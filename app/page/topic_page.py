@@ -26,14 +26,8 @@ class TopicPage(BasePage):
 
             if topic_selected != '':
                 st.write(top2vec_model.topic_sizes[topic_selected])
-                # fig = generate_topic_wordcloud(model, topic_selected)
-                # st.pyplot(fig=fig)
-                # w_ = dict(zip(model.topic_words[topic_selected],
-                #               softmax(model.topic_word_scores[topic_selected])))
-                # st.write(w_)
-                # words_ = [{'text': w, 'value': float(s)} for w, s in zip(model.topic_words[topic_selected], model.topic_word_scores[topic_selected])]
-                # st.write(words_)
-                # wordcloud.visualize(words_, enable_tooltip=False, key='aaa')
+                fig = model.generate_topic_wordcloud(topic_selected)
+                st.pyplot(fig=fig)
 
                 topic_words = top2vec_model.topic_words[topic_selected]
                 scores = top2vec_model.topic_word_scores[topic_selected]
