@@ -2,6 +2,9 @@ from abc import ABC, abstractmethod
 from app_data import AppData
 from app_url import AppURL
 import streamlit as st
+from top2vec import Top2Vec
+from typing import Optional
+from app_data import BaseModel
 
 
 class BasePage(ABC):
@@ -9,17 +12,19 @@ class BasePage(ABC):
         self.app_data = app_data
         self.app_url = app_url
         self.topic_no = None
-        self.top2vec_model = None
-        self.model = None
+        self.top2vec_model: Optional[Top2Vec] = None
+        self.model: Optional[BaseModel] = None
+        self.num_res_max = 100
 
         self.function_url_key = 'function'
         self.function_topic_detail_key = 'topic details'
         self.function_document_detail_key = 'document details'
         self.function_search_by_words_key = 'search by words'
         self.function_search_by_text_key = 'search by text'
+        self.function_search_by_documents_key= 'search by documents'
 
     def run(self):
-        self.num_res = st.slider('number of results:', 0, 100, 10, 1)
+        self.num_res = st.slider('number of results:', 0, self.num_res_max, 10, 1)
         self.num_res = int(self.num_res)
 
         if self.select_model():
@@ -43,4 +48,8 @@ class BasePage(ABC):
 
     def topic_link(self, topic):
         pm = {self.function_url_key: self.function_topic_detail_key, 'topic': topic}
+        return '[detail link]({})'.format(self.app_url.internal_link(**pm))
+
+    def document_link(self, document):
+        pm = {self.function_url_key: self.function_document_detail_key, 'document': document}
         return '[detail link]({})'.format(self.app_url.internal_link(**pm))

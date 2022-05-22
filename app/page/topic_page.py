@@ -23,7 +23,7 @@ class TopicPage(BasePage):
         topic_words = self.top2vec_model.topic_words[topic_selected]
         scores = self.top2vec_model.topic_word_scores[topic_selected]
         topic_df = pd.DataFrame(zip(topic_words, scores), columns=['word', 'score'])
-        st.dataframe(topic_df)
+        st.table(topic_df.iloc[:self.num_res])
 
     def view_topic(self):
         topic_selected = st.selectbox('topic:', [''] + list(range(self.topic_no)))

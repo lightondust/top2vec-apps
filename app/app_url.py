@@ -24,7 +24,7 @@ class AppURL(object):
         return './?{}'.format(d_qs)
 
     def sync_variable(self, name, v, v_default):
-        if v:
+        if v or v == 0:
             v_input = [v]
         else:
             v_input = []

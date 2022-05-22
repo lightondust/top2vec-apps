@@ -55,7 +55,20 @@ class BaseModel(object):
     def load_model(self):
         self.top2vec_model = Top2Vec.load(self.path)
 
-    def generate_topic_wordcloud(self, topic_num, background_color="black", reduced=False):
+    def wordcloud(self, word_score_dict, background_color="black"):
+        fig = plt.figure(figsize=(16, 4),
+                         dpi=200)
+        plt.axis("off")
+        additional_input = {}
+        if self.font_path:
+            additional_input['font_path'] = self.font_path
+        plt.imshow(
+            WordCloud(width=1600,
+                      height=400,
+                      background_color=background_color, **additional_input).generate_from_frequencies(word_score_dict))
+        return fig
+
+    def generate_topic_wordcloud(self, topic_num, reduced=False, **kwargs):
         model = self.top2vec_model
 
         if reduced:
@@ -68,17 +81,7 @@ class BaseModel(object):
             word_score_dict = dict(zip(model.topic_words[topic_num],
                                        softmax(model.topic_word_scores[topic_num])))
 
-        fig = plt.figure(figsize=(16, 4),
-                         dpi=200)
-        plt.axis("off")
-        additional_input = {}
-        if self.font_path:
-            additional_input['font_path'] = self.font_path
-        plt.imshow(
-            WordCloud(width=1600,
-                      height=400,
-                      background_color=background_color, **additional_input).generate_from_frequencies(word_score_dict))
-        return fig
+        return self.wordcloud(word_score_dict, **kwargs)
 
 
 class NewsGroup20Model(BaseModel):
