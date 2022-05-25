@@ -33,6 +33,10 @@ class DocumentPage(BasePage):
     def document_view(self):
         doc_selected = st.selectbox('document to words:', [''] + list(self.top2vec_model.document_ids))
         doc_selected = self.app_url.sync_variable('document', doc_selected, '')
+        try:
+            doc_selected = int(doc_selected)
+        except:
+            pass
         st.markdown('#### document: {}'.format(doc_selected))
         if doc_selected != '':
             doc_id_selected = self.top2vec_model.doc_id2index[doc_selected]
@@ -49,7 +53,7 @@ class DocumentPage(BasePage):
             doc = self.top2vec_model.documents[doc_id_selected]
             st.write(doc[:300].replace('\n', ' /// '))
             with st.expander('full text'):
-                st.write(doc)
+                st.write(doc.replace('\n', '\n\n'))
 
             st.markdown('## documents similar')
             self._search_documents_by_documents([doc_selected])
@@ -60,7 +64,7 @@ class DocumentPage(BasePage):
             st.write(doc[:300].replace('\n', ' /// '))
             st.markdown(self.document_link(doc_id))
             with st.expander('detail'):
-                st.write(doc)
+                st.write(doc.replace('\n', '\n\n'))
 
     def search_documents_by_text(self):
         text_documents = st.text_input('search documents by similar text:')
