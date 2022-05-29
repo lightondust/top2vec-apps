@@ -1,27 +1,31 @@
 from abc import ABC, abstractmethod
+from typing import List
 from app_data import AppData
 from app_url import AppURL
 import streamlit as st
 from top2vec import Top2Vec
 from typing import Optional
-from app_data import BaseModel
+from app_model import BaseModel
 
 
 class BasePage(ABC):
     def __init__(self, app_data: AppData, app_url: AppURL):
+        self.num_res = None
+        self.word_list: List[str] = []
         self.app_data = app_data
         self.app_url = app_url
         self.topic_no = None
         self.top2vec_model: Optional[Top2Vec] = None
         self.model: Optional[BaseModel] = None
         self.num_res_max = 100
+        self.function_map = {}
 
         self.function_url_key = 'function'
         self.function_topic_detail_key = 'topic details'
         self.function_document_detail_key = 'document details'
         self.function_search_by_words_key = 'search by words'
         self.function_search_by_text_key = 'search by text'
-        self.function_search_by_documents_key= 'search by documents'
+        self.function_search_by_documents_key = 'search by documents'
 
     def run(self):
         self.num_res = st.slider('number of results:', 0, self.num_res_max, 10, 1)

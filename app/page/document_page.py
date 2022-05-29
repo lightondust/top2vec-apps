@@ -21,9 +21,6 @@ class DocumentPage(BasePage):
         docs_selected = st.multiselect('document to words:', [''] + list(self.top2vec_model.document_ids))
         if docs_selected:
             self._search_documents_by_documents(docs_selected)
-            # documents, document_scores, document_ids = self.top2vec_model.search_documents_by_documents(docs_selected,
-            #                                                                                             num_docs=self.num_res)
-            # self.view_document_list(documents, document_scores, document_ids)
 
     def _search_documents_by_documents(self, documents):
         documents, document_scores, document_ids = self.top2vec_model.search_documents_by_documents(documents,
@@ -33,10 +30,8 @@ class DocumentPage(BasePage):
     def document_view(self):
         doc_selected = st.selectbox('document to words:', [''] + list(self.top2vec_model.document_ids))
         doc_selected = self.app_url.sync_variable('document', doc_selected, '')
-        try:
-            doc_selected = int(doc_selected)
-        except:
-            pass
+        doc_selected = self.model.transform_document_id(doc_selected)
+
         st.markdown('#### document: {}'.format(doc_selected))
         if doc_selected != '':
             doc_id_selected = self.top2vec_model.doc_id2index[doc_selected]
@@ -51,20 +46,17 @@ class DocumentPage(BasePage):
 
             st.table(pd.DataFrame(zip(words, scores), columns=['word', 'score']).iloc[:self.num_res])
             doc = self.top2vec_model.documents[doc_id_selected]
-            st.write(doc[:300].replace('\n', ' /// '))
-            with st.expander('full text'):
-                st.write(doc.replace('\n', '\n\n'))
 
+            self.model.view_document(doc)
             st.markdown('## documents similar')
             self._search_documents_by_documents([doc_selected])
 
     def view_document_list(self, documents, document_scores, document_ids):
         for doc, score, doc_id in zip(documents, document_scores, document_ids):
             st.write(f"### Document: {doc_id}, Score: {score}")
-            st.write(doc[:300].replace('\n', ' /// '))
-            st.markdown(self.document_link(doc_id))
-            with st.expander('detail'):
-                st.write(doc.replace('\n', '\n\n'))
+            self.model.view_document(doc, doc_id)
+            if doc_id:
+                st.markdown(self.document_link(doc_id))
 
     def search_documents_by_text(self):
         text_documents = st.text_input('search documents by similar text:')
