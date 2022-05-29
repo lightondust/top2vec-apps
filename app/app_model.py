@@ -12,6 +12,7 @@ import streamlit as st
 class BaseModel(object):
 
     def __init__(self):
+        self.info = ''
         self.top2vec_model = None
         self.path = ''
         self.tokenizer = None
@@ -19,7 +20,7 @@ class BaseModel(object):
         self.jp_font_path = japanize_matplotlib.get_font_path() + '/ipaexg.ttf'
         self.ch_font_path = '../data/fonts/chinese.simhei.ttf'
 
-    def view_document(self, doc, doc_id=None):
+    def view_document(self, doc):
         st.write(doc[:300].replace('\n', ' /// '))
         with st.expander('full text'):
             st.write(doc.replace('\n', '\n\n'))
@@ -68,6 +69,10 @@ class NewsGroup20Model(BaseModel):
     def __init__(self):
         super().__init__()
         self.path = '../data/models/20_news_group.model'
+        self.info = '''
+        learned on dataset: 20 Newsgroups
+        [link](http://qwone.com/~jason/20Newsgroups/)
+        '''
 
 
 class LivedoorModel(BaseModel):
@@ -77,6 +82,9 @@ class LivedoorModel(BaseModel):
         self.path = '../data/models/livedoor.model'
         self.tokenizer = jp_tokenizer
         self.font_path = self.jp_font_path
+        self.info = '''
+        learned on livedoor ニュースコーパス([link](https://www.rondhuit.com/download.html#news%20corpus))
+        '''
 
 
 class YouhouModel(BaseModel):

@@ -38,6 +38,9 @@ class BasePage(ABC):
             if func in self.function_map:
                 self.function_map[func]()
 
+        if self.model:
+            st.sidebar.markdown(self.model.info)
+
     def select_model(self):
         model_name_selected = st.selectbox('model:', [''] + list(self.app_data.model_map.keys()))
         model_name = self.app_url.sync_variable('model', model_name_selected, '')

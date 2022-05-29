@@ -54,7 +54,7 @@ class DocumentPage(BasePage):
     def view_document_list(self, documents, document_scores, document_ids):
         for doc, score, doc_id in zip(documents, document_scores, document_ids):
             st.write(f"### Document: {doc_id}, Score: {score}")
-            self.model.view_document(doc, doc_id)
+            self.model.view_document(doc)
             if doc_id:
                 st.markdown(self.document_link(doc_id))
 
