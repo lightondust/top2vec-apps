@@ -203,8 +203,8 @@ class SudachiTokenizer(object):
 
 
 model_class_map = {
-    'youho': YouhouModel,
-    'youho_noun_stop': YouhouNounStopModel,
+    # 'youho': YouhouModel,
+    # 'youho_noun_stop': YouhouNounStopModel,
     # 'ch': ChOtModel,
     # 'ch fix 500': ChOtFix500Model,
     'livedoor news dataset': LivedoorModel,
