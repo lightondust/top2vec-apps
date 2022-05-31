@@ -59,8 +59,8 @@ class BasePage(ABC):
 
     def topic_link(self, topic):
         pm = {self.function_url_key: self.function_topic_detail_key, 'topic': topic}
-        return '[detail link]({})'.format(self.app_url.internal_link(**pm))
+        return '[topic detail]({})'.format(self.app_url.internal_link(**pm))
 
     def document_link(self, document):
         pm = {self.function_url_key: self.function_document_detail_key, 'document': document}
-        return '[detail link]({})'.format(self.app_url.internal_link(**pm))
+        return '[document detail]({})'.format(self.app_url.internal_link(**pm))
