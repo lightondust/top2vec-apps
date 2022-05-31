@@ -86,6 +86,11 @@ class LivedoorModel(BaseModel):
         learned on livedoor ニュースコーパス([link](https://www.rondhuit.com/download.html#news%20corpus))
         '''
 
+    def view_document(self, doc):
+        st.write(doc[:300].replace('\n', ' /// '))
+        # with st.expander('full text'):
+        #     st.write(doc.replace('\n', '\n\n'))
+
 
 class YouhouModel(BaseModel):
 

@@ -33,7 +33,7 @@ class DocumentPage(BasePage):
         doc_selected = self.model.transform_document_id(doc_selected)
 
         st.markdown('#### document: {}'.format(doc_selected))
-        if doc_selected != '':
+        if doc_selected in self.top2vec_model.doc_id2index:
             doc_id_selected = self.top2vec_model.doc_id2index[doc_selected]
             doc_vec = self.top2vec_model.document_vectors[doc_id_selected]
             word_ids, scores = self.top2vec_model._search_vectors_by_vector(self.top2vec_model.word_vectors,

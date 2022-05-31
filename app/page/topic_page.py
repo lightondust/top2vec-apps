@@ -32,16 +32,17 @@ class TopicPage(BasePage):
 
         if topic_selected != '':
             topic_selected = int(topic_selected)
-            st.write('topic size: {}'.format(self.top2vec_model.topic_sizes[topic_selected]))
-            self.topic_info(topic_selected)
+            if topic_selected < self.topic_no:
+                st.write('topic size: {}'.format(self.top2vec_model.topic_sizes[topic_selected]))
+                self.topic_info(topic_selected)
 
-            documents, document_scores, document_ids = self.top2vec_model.search_documents_by_topic(topic_num=topic_selected,
-                                                                                                    num_docs=self.num_res)
-            for doc, score, doc_id in zip(documents, document_scores, document_ids):
-                st.write(f"### Document: {doc_id}, Score: {score}")
-                st.write(doc[:300].replace('\n', ' /// '))
-                with st.expander('detail'):
-                    st.write(doc)
+                documents, document_scores, document_ids = self.top2vec_model.search_documents_by_topic(topic_num=topic_selected,
+                                                                                                        num_docs=self.num_res)
+                for doc, score, doc_id in zip(documents, document_scores, document_ids):
+                    st.write(f"### Document: {doc_id}, Score: {score}")
+                    st.write(doc[:300].replace('\n', ' /// '))
+                    with st.expander('detail'):
+                        st.write(doc)
 
     def search_topic_by_words(self):
         topic_words_selected = st.multiselect('search topics by words:', self.word_list)

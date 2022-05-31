@@ -1,6 +1,7 @@
 a streamlit app for top2vec 
 
 - about top2vec: https://github.com/ddangelov/Top2Vec
+- [demo site](https://www.wisdparad.com/top2vec/)
 
 # how to
 

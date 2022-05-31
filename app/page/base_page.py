@@ -41,6 +41,8 @@ class BasePage(ABC):
         if self.model:
             st.sidebar.markdown(self.model.info)
 
+        st.sidebar.markdown('[source code](https://github.com/lightondust/top2vec-apps)')
+
     def select_model(self):
         model_name_selected = st.selectbox('model:', [''] + list(self.app_data.model_map.keys()))
         model_name = self.app_url.sync_variable('model', model_name_selected, '')
