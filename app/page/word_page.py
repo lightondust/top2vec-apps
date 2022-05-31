@@ -7,7 +7,6 @@ class WordPage(BasePage):
 
     def __init__(self, app_data, **kwargs):
         super().__init__(app_data, **kwargs)
-        st.title(WordPage.title)
         self.function_map = {
             self.function_search_by_words_key: self.search_words_by_word
         }
@@ -23,3 +22,4 @@ class WordPage(BasePage):
 
     def run(self):
         super().run()
+        self.title_comp.title(WordPage.title)

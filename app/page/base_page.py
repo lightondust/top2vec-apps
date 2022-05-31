@@ -19,6 +19,7 @@ class BasePage(ABC):
         self.model: Optional[BaseModel] = None
         self.num_res_max = 100
         self.function_map = {}
+        self.title_comp = None
 
         self.function_url_key = 'function'
         self.function_topic_detail_key = 'topic details'
@@ -28,6 +29,7 @@ class BasePage(ABC):
         self.function_search_by_documents_key = 'search by documents'
 
     def run(self):
+        self.title_comp = st.empty()
         self.num_res = st.slider('number of results:', 0, self.num_res_max, 10, 1)
         self.num_res = int(self.num_res)
 

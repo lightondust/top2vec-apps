@@ -8,7 +8,6 @@ class TopicPage(BasePage):
 
     def __init__(self, app_data, **kwargs):
         super().__init__(app_data, **kwargs)
-        st.title(TopicPage.title)
         self.num_res = None
         self.function_map = {
             self.function_topic_detail_key: self.view_topic,
@@ -74,3 +73,4 @@ class TopicPage(BasePage):
 
     def run(self):
         super().run()
+        self.title_comp.title(TopicPage.title)

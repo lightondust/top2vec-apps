@@ -9,7 +9,6 @@ class DocumentPage(BasePage):
 
     def __init__(self, app_data, **kwargs):
         super().__init__(app_data, **kwargs)
-        st.title(DocumentPage.title)
         self.function_map = {
             self.function_document_detail_key: self.document_view,
             self.function_search_by_words_key: self.search_documents_by_words,
@@ -77,3 +76,4 @@ class DocumentPage(BasePage):
 
     def run(self):
         super().run()
+        self.title_comp.title(DocumentPage.title)
