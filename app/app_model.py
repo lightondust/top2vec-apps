@@ -7,20 +7,30 @@ from wordcloud import WordCloud
 import jieba
 from sudachipy import dictionary, tokenizer
 import streamlit as st
+from typing import Optional
 
 
 class BaseModel(object):
 
     def __init__(self):
         self.info = ''
-        self.top2vec_model = None
+        self.top2vec_model: Optional[Top2Vec] = None
         self.path = ''
         self.tokenizer = None
         self.font_path = ''
         self.jp_font_path = japanize_matplotlib.get_font_path() + '/ipaexg.ttf'
         self.ch_font_path = '../data/fonts/chinese.simhei.ttf'
 
-    def view_document(self, doc):
+    def top_display(self, top_id):
+        return '{}_{}'.format(top_id, '_'.join(self.top2vec_model.topic_words[top_id][:3]))
+
+    def view_document(self, doc_id):
+        doc_idx = self.top2vec_model.doc_id2index[doc_id]
+        top_idx = self.top2vec_model.doc_top[doc_idx]
+        top = self.top_display(top_idx)
+        top_score = self.top2vec_model.doc_dist[doc_idx]
+        st.markdown('topic: {}, score: {}'.format(top, top_score))
+        doc = self.top2vec_model.documents[doc_idx]
         st.write(doc[:300].replace('\n', ' /// '))
         with st.expander('full text'):
             st.write(doc.replace('\n', '\n\n'))

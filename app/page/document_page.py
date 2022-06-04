@@ -5,7 +5,7 @@ import streamlit as st
 
 
 class DocumentPage(BasePage):
-    title = 'Document Page'
+    title = 'Search Document'
 
     def __init__(self, app_data, **kwargs):
         super().__init__(app_data, **kwargs)
@@ -17,14 +17,14 @@ class DocumentPage(BasePage):
         }
 
     def search_documents_by_documents(self):
-        docs_selected = st.multiselect('document to words:', [''] + list(self.top2vec_model.document_ids))
-        if docs_selected:
-            self._search_documents_by_documents(docs_selected)
+        doc_ids_selected = st.multiselect('document to words:', [''] + list(self.top2vec_model.document_ids))
+        if doc_ids_selected:
+            self._search_documents_by_documents(doc_ids_selected)
 
-    def _search_documents_by_documents(self, documents):
-        documents, document_scores, document_ids = self.top2vec_model.search_documents_by_documents(documents,
-                                                                                                    num_docs=self.num_res)
-        self.view_document_list(documents, document_scores, document_ids)
+    def _search_documents_by_documents(self, document_ids):
+        document_ids, document_scores, document_ids = self.top2vec_model.search_documents_by_documents(document_ids,
+                                                                                                       num_docs=self.num_res)
+        self.view_document_list(document_ids, document_scores, document_ids)
 
     def document_view(self):
         doc_selected = st.selectbox('document to words:', [''] + list(self.top2vec_model.document_ids))
@@ -33,8 +33,8 @@ class DocumentPage(BasePage):
 
         st.markdown('#### document: {}'.format(doc_selected))
         if doc_selected in self.top2vec_model.doc_id2index:
-            doc_id_selected = self.top2vec_model.doc_id2index[doc_selected]
-            doc_vec = self.top2vec_model.document_vectors[doc_id_selected]
+            doc_idx_selected = self.top2vec_model.doc_id2index[doc_selected]
+            doc_vec = self.top2vec_model.document_vectors[doc_idx_selected]
             word_ids, scores = self.top2vec_model._search_vectors_by_vector(self.top2vec_model.word_vectors,
                                                                             doc_vec,
                                                                             num_res=self.num_res_max)
@@ -44,16 +44,15 @@ class DocumentPage(BasePage):
             st.pyplot(fig)
 
             st.table(pd.DataFrame(zip(words, scores), columns=['word', 'score']).iloc[:self.num_res])
-            doc = self.top2vec_model.documents[doc_id_selected]
 
-            self.model.view_document(doc)
+            self.model.view_document(doc_selected)
             st.markdown('## documents similar')
             self._search_documents_by_documents([doc_selected])
 
     def view_document_list(self, documents, document_scores, document_ids):
         for doc, score, doc_id in zip(documents, document_scores, document_ids):
             st.write(f"### Document: {doc_id}, Score: {score}")
-            self.model.view_document(doc)
+            self.model.view_document(doc_id)
             if doc_id:
                 st.markdown(self.document_link(doc_id))
 

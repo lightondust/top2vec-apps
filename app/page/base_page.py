@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import pandas as pd
 from typing import List
 from app_data import AppData
 from app_url import AppURL
@@ -10,6 +11,7 @@ from app_model import BaseModel
 
 class BasePage(ABC):
     def __init__(self, app_data: AppData, app_url: AppURL):
+        self.topic_name_list = []
         self.num_res = None
         self.word_list: List[str] = []
         self.app_data = app_data
@@ -23,6 +25,7 @@ class BasePage(ABC):
 
         self.function_url_key = 'function'
         self.function_topic_detail_key = 'topic details'
+        self.function_topic_stats_key = 'topic stats'
         self.function_document_detail_key = 'document details'
         self.function_search_by_words_key = 'search by words'
         self.function_search_by_text_key = 'search by text'
@@ -54,6 +57,9 @@ class BasePage(ABC):
             self.top2vec_model = self.model.top2vec_model
             self.word_list = list(self.top2vec_model.word_indexes.keys())
             self.topic_no = self.top2vec_model.get_num_topics()
+            self.topic_name_list = ['{}_{}'.format(i, '_'.join(t[:3])) for i, t in enumerate(self.top2vec_model.topic_words)]
+            self.topic_df = pd.DataFrame(zip(self.topic_name_list, self.top2vec_model.topic_sizes),
+                                         columns=['name', 'topic_size'])
             st.markdown('#### total topic no: {}'.format(self.topic_no))
         return model_name
 

@@ -1,19 +1,30 @@
 from page.base_page import BasePage
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
 
 class TopicPage(BasePage):
-    title = 'Topic Page'
+    title = 'Search Topic'
 
     def __init__(self, app_data, **kwargs):
         super().__init__(app_data, **kwargs)
         self.num_res = None
         self.function_map = {
+            self.function_topic_stats_key: self.topic_stats,
             self.function_topic_detail_key: self.view_topic,
             self.function_search_by_words_key: self.search_topic_by_words,
-            self.function_search_by_text_key: self.search_topic_by_text
+            self.function_search_by_text_key: self.search_topic_by_text,
         }
+
+    def topic_stats(self):
+        df = self.topic_df.copy(deep=True)
+        fig = px.bar(df, x='name', y='topic_size')
+        st.plotly_chart(fig)
+        df.loc[df.topic_size < df.topic_size.iloc[20], 'name'] = 'other'
+        fig = px.pie(df, values='topic_size', names='name')
+        st.plotly_chart(fig)
+        st.table(self.topic_df)
 
     def topic_info(self, topic_selected):
         fig = self.model.generate_topic_wordcloud(topic_selected)
@@ -25,23 +36,34 @@ class TopicPage(BasePage):
         st.table(topic_df.iloc[:self.num_res])
 
     def view_topic(self):
-        topic_selected = st.selectbox('topic:', [''] + list(range(self.topic_no)))
-        topic_selected = self.app_url.sync_variable('topic', topic_selected, '')
-        st.markdown('#### topic: {}'.format(topic_selected))
+        topic_name_selected = st.selectbox('topic:', [''] + self.topic_name_list)
 
-        if topic_selected != '':
-            topic_selected = int(topic_selected)
-            if topic_selected < self.topic_no:
-                st.write('topic size: {}'.format(self.top2vec_model.topic_sizes[topic_selected]))
-                self.topic_info(topic_selected)
+        if topic_name_selected != '':
+            topic_idx_selected = self.topic_name_list.index(topic_name_selected)
+            topic_idx_selected = self.app_url.sync_variable('topic', topic_idx_selected, '')
+        else:
+            topic_idx_selected = self.app_url.sync_variable('topic', False, '')
 
-                documents, document_scores, document_ids = self.top2vec_model.search_documents_by_topic(topic_num=topic_selected,
+        if topic_idx_selected != '':
+            topic_idx_selected = int(topic_idx_selected)
+            st.markdown('#### topic: {}'.format(self.topic_name_list[topic_idx_selected]))
+            if topic_idx_selected < self.topic_no:
+                st.write('topic size: {}'.format(self.top2vec_model.topic_sizes[topic_idx_selected]))
+                self.topic_info(topic_idx_selected)
+
+                st.title('documents in topic')
+                documents, document_scores, document_ids = self.top2vec_model.search_documents_by_topic(topic_num=topic_idx_selected,
                                                                                                         num_docs=self.num_res)
                 for doc, score, doc_id in zip(documents, document_scores, document_ids):
                     st.write(f"### Document: {doc_id}, Score: {score}")
-                    st.write(doc[:300].replace('\n', ' /// '))
-                    with st.expander('detail'):
-                        st.write(doc)
+                    self.model.view_document(doc_id)
+
+                st.title('topic similar')
+                topic_ids, topic_scores = self.top2vec_model._search_vectors_by_vector(self.top2vec_model.topic_vectors,
+                                                                                       self.top2vec_model.topic_vectors[topic_idx_selected],
+                                                                                       num_res=self.num_res)
+                topic_words = [self.top2vec_model.topic_words[i] for i in topic_ids]
+                self.view_topic_list(topic_ids, topic_words, topic_scores)
 
     def search_topic_by_words(self):
         topic_words_selected = st.multiselect('search topics by words:', self.word_list)
