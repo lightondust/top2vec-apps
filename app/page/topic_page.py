@@ -24,7 +24,7 @@ class TopicPage(BasePage):
         df.loc[df.topic_size < df.topic_size.iloc[20], 'name'] = 'other'
         fig = px.pie(df, values='topic_size', names='name')
         st.plotly_chart(fig)
-        st.table(self.topic_df)
+        st.dataframe(self.topic_df)
 
     def topic_info(self, topic_selected):
         fig = self.model.generate_topic_wordcloud(topic_selected)

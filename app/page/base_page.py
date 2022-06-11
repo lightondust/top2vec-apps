@@ -37,7 +37,7 @@ class BasePage(ABC):
         self.num_res = int(self.num_res)
 
         if self.select_model():
-            func = st.radio('function:', [''] + list(self.function_map.keys()))
+            func = st.radio('function:', [''] + list(self.function_map.keys()), horizontal=True)
             func = self.app_url.sync_variable(self.function_url_key, func, '')
             st.markdown('### function {}'.format(func))
             if func in self.function_map:
@@ -57,7 +57,7 @@ class BasePage(ABC):
             self.top2vec_model = self.model.top2vec_model
             self.word_list = list(self.top2vec_model.word_indexes.keys())
             self.topic_no = self.top2vec_model.get_num_topics()
-            self.topic_name_list = ['{}_{}'.format(i, '_'.join(t[:3])) for i, t in enumerate(self.top2vec_model.topic_words)]
+            self.topic_name_list = self.model.topic_name_list
             self.topic_df = pd.DataFrame(zip(self.topic_name_list, self.top2vec_model.topic_sizes),
                                          columns=['name', 'topic_size'])
             st.markdown('#### total topic no: {}'.format(self.topic_no))

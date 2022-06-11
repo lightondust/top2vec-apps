@@ -8,6 +8,9 @@ import jieba
 from sudachipy import dictionary, tokenizer
 import streamlit as st
 from typing import Optional
+import umap
+import pandas as pd
+import os
 
 
 class BaseModel(object):
@@ -20,11 +23,47 @@ class BaseModel(object):
         self.font_path = ''
         self.jp_font_path = japanize_matplotlib.get_font_path() + '/ipaexg.ttf'
         self.ch_font_path = '../data/fonts/chinese.simhei.ttf'
+        self.topic_name_list = None
+        self.viz_df:Optional[pd.DataFrame] = None
+
+    @property
+    def viz_path(self):
+        return self.path + '.viz.csv'
+
+    def create_viz_data(self):
+        if not os.path.exists(self.viz_path):
+            u_model = umap.UMAP(metric='cosine')
+            doc_vec_u = u_model.fit_transform(self.top2vec_model.document_vectors)
+
+            doc_df = pd.DataFrame(doc_vec_u, columns=['x', 'y'])
+            doc_df['name'] = self.top2vec_model.document_ids
+            doc_df['topic_id'] = self.top2vec_model.doc_top
+            doc_df['topic_id'] = doc_df.topic_id.astype('category')
+            doc_df['node_type'] = 'document'
+            doc_df['score'] = self.top2vec_model.doc_dist
+
+            topic_u_embedding = u_model.transform(self.top2vec_model.topic_vectors)
+            topic_u_embedding_df = pd.DataFrame(topic_u_embedding, columns=['x', 'y'])
+            topic_u_embedding_df['node_type'] = 'topic'
+            topic_u_embedding_df['name'] = self.topic_name_list
+            topic_u_embedding_df['topic_id'] = list(range(topic_u_embedding_df.shape[0]))
+            topic_u_embedding_df['topic_id'] = topic_u_embedding_df.topic_id.astype('category')
+            topic_u_embedding_df['score'] = 1.
+
+            viz_df = pd.concat([doc_df, topic_u_embedding_df])
+            viz_df.to_csv(self.viz_path)
+        self.viz_df = pd.read_csv(self.viz_path, index_col=0)
+        self.viz_df['topic_name'] = self.viz_df.topic_id.apply(lambda x: self.topic_name_list[x])
+        self.viz_df.topic_id = self.viz_df.topic_id.astype('category')
+        self.viz_df.node_type = self.viz_df.node_type.astype('category')
 
     def top_display(self, top_id):
         return '{}_{}'.format(top_id, '_'.join(self.top2vec_model.topic_words[top_id][:3]))
 
     def view_document(self, doc_id):
+        self._view_document(doc_id)
+
+    def _view_document(self, doc_id, full_doc=True):
         doc_idx = self.top2vec_model.doc_id2index[doc_id]
         top_idx = self.top2vec_model.doc_top[doc_idx]
         top = self.top_display(top_idx)
@@ -32,8 +71,9 @@ class BaseModel(object):
         st.markdown('topic: {}, score: {}'.format(top, top_score))
         doc = self.top2vec_model.documents[doc_idx]
         st.write(doc[:300].replace('\n', ' /// '))
-        with st.expander('full text'):
-            st.write(doc.replace('\n', '\n\n'))
+        if full_doc:
+            with st.expander('full text'):
+                st.write(doc.replace('\n', '\n\n'))
 
     @staticmethod
     def transform_document_id(doc_id):
@@ -44,6 +84,8 @@ class BaseModel(object):
 
     def load_model(self):
         self.top2vec_model = Top2Vec.load(self.path)
+        self.topic_name_list = ['{}_{}'.format(i, '_'.join(t[:3])) for i, t in enumerate(self.top2vec_model.topic_words)]
+        self.create_viz_data()
 
     def wordcloud(self, word_score_dict, background_color="black"):
         fig = plt.figure(figsize=(16, 4),
@@ -96,10 +138,8 @@ class LivedoorModel(BaseModel):
         learned on livedoor ニュースコーパス([link](https://www.rondhuit.com/download.html#news%20corpus))
         '''
 
-    def view_document(self, doc):
-        st.write(doc[:300].replace('\n', ' /// '))
-        # with st.expander('full text'):
-        #     st.write(doc.replace('\n', '\n\n'))
+    def view_document(self, doc_id):
+        self._view_document(doc_id, full_doc=False)
 
 
 class YouhouModel(BaseModel):

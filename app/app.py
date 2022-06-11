@@ -4,6 +4,7 @@ from app_url import AppURL
 from page.main_page import MainPage
 from page.topic_page import TopicPage
 from page.document_page import DocumentPage
+from page.viz_page import VizPage
 from page.word_page import WordPage
 from app_data import get_app_data
 import logging
@@ -25,7 +26,8 @@ page_class_list = [
     MainPage,
     TopicPage,
     DocumentPage,
-    WordPage
+    WordPage,
+    VizPage
 ]
 page_class = {p.title: p for p in page_class_list}
 page_selected = st.sidebar.radio('page:', list(page_class.keys())+[''], index=len(page_class))

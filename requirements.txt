@@ -13,6 +13,7 @@ certifi==2021.10.8
 cffi==1.15.0
 charset-normalizer==2.0.12
 click==8.0.4
+commonmark==0.9.1
 cycler==0.11.0
 Cython==0.29.28
 debugpy==1.6.0
@@ -82,6 +83,7 @@ pytz==2022.1
 pytz-deprecation-shim==0.1.0.post0
 pyzmq==22.3.0
 requests==2.27.1
+rich==12.4.4
 scikit-learn==1.0.2
 scipy==1.6.1
 semver==2.13.0
@@ -91,7 +93,7 @@ smart-open==6.0.0
 smmap==5.0.0
 soupsieve==2.3.2.post1
 stack-data==0.2.0
-streamlit==1.9.0
+streamlit==1.10.0
 streamlit-wordcloud==0.1.0
 SudachiDict-core==20211220
 SudachiPy==0.6.3
@@ -105,6 +107,7 @@ top2vec==1.0.27
 tornado==6.1
 tqdm==4.64.0
 traitlets==5.2.0
+typing_extensions==4.2.0
 tzdata==2022.1
 tzlocal==4.2
 umap-learn==0.5.3
