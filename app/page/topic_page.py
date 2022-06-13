@@ -5,7 +5,7 @@ import plotly.express as px
 
 
 class TopicPage(BasePage):
-    title = 'Search Topic'
+    title = 'Topic Page'
 
     def __init__(self, app_data, **kwargs):
         super().__init__(app_data, **kwargs)
@@ -96,3 +96,7 @@ class TopicPage(BasePage):
     def run(self):
         super().run()
         self.title_comp.title(TopicPage.title)
+
+    def topic_link(self, topic_idx):
+        pm = {self.function_url_key: self.function_topic_detail_key, 'topic': topic_idx, 'page': TopicPage.title}
+        return '[topic detail]({})'.format(self.app_url.internal_link(**pm))

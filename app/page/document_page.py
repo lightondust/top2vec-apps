@@ -5,7 +5,7 @@ import streamlit as st
 
 
 class DocumentPage(BasePage):
-    title = 'Search Document'
+    title = 'Document Page'
 
     def __init__(self, app_data, **kwargs):
         super().__init__(app_data, **kwargs)
@@ -76,3 +76,7 @@ class DocumentPage(BasePage):
     def run(self):
         super().run()
         self.title_comp.title(DocumentPage.title)
+
+    def document_link(self, document_id):
+        pm = {self.function_url_key: self.function_document_detail_key, 'document': document_id, 'page': DocumentPage.title}
+        return '[document detail]({})'.format(self.app_url.internal_link(**pm))

@@ -3,6 +3,7 @@ import streamlit as st
 from app_url import AppURL
 from page.main_page import MainPage
 from page.topic_page import TopicPage
+from page.search_page import SearchPage
 from page.document_page import DocumentPage
 from page.viz_page import VizPage
 from page.word_page import WordPage
@@ -24,10 +25,11 @@ def _get_app_data(page_class, model_class_map):
 
 page_class_list = [
     MainPage,
+    SearchPage,
+    VizPage,
     TopicPage,
     DocumentPage,
     WordPage,
-    VizPage
 ]
 page_class = {p.title: p for p in page_class_list}
 page_selected = st.sidebar.radio('page:', list(page_class.keys())+[''], index=len(page_class))

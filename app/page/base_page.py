@@ -10,7 +10,7 @@ from app_model import BaseModel
 
 
 class BasePage(ABC):
-    def __init__(self, app_data: AppData, app_url: AppURL):
+    def __init__(self, app_data: AppData, app_url: AppURL, model_name=''):
         self.topic_name_list = []
         self.num_res = None
         self.word_list: List[str] = []
@@ -19,6 +19,10 @@ class BasePage(ABC):
         self.topic_no = None
         self.top2vec_model: Optional[Top2Vec] = None
         self.model: Optional[BaseModel] = None
+        self.model_name = ''
+        if model_name:
+            self.model_name = model_name
+            self.process_model()
         self.num_res_max = 100
         self.function_map = {}
         self.title_comp = None
@@ -50,10 +54,13 @@ class BasePage(ABC):
 
     def select_model(self):
         model_name_selected = st.selectbox('model:', [''] + list(self.app_data.model_map.keys()))
-        model_name = self.app_url.sync_variable('model', model_name_selected, '')
-        st.markdown('#### model: {}'.format(model_name))
-        if model_name in self.app_data.model_map:
-            self.model = self.app_data.model_map[model_name]
+        self.model_name = self.app_url.sync_variable('model', model_name_selected, '')
+        st.markdown('#### model: {}'.format(self.model_name))
+        return self.process_model()
+
+    def process_model(self):
+        if self.model_name in self.app_data.model_map:
+            self.model = self.app_data.model_map[self.model_name]
             self.top2vec_model = self.model.top2vec_model
             self.word_list = list(self.top2vec_model.word_indexes.keys())
             self.topic_no = self.top2vec_model.get_num_topics()
@@ -61,12 +68,4 @@ class BasePage(ABC):
             self.topic_df = pd.DataFrame(zip(self.topic_name_list, self.top2vec_model.topic_sizes),
                                          columns=['name', 'topic_size'])
             st.markdown('#### total topic no: {}'.format(self.topic_no))
-        return model_name
-
-    def topic_link(self, topic):
-        pm = {self.function_url_key: self.function_topic_detail_key, 'topic': topic}
-        return '[topic detail]({})'.format(self.app_url.internal_link(**pm))
-
-    def document_link(self, document):
-        pm = {self.function_url_key: self.function_document_detail_key, 'document': document}
-        return '[document detail]({})'.format(self.app_url.internal_link(**pm))
+            return self.model_name

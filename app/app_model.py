@@ -3,6 +3,7 @@ import japanize_matplotlib
 from matplotlib import pyplot as plt
 from scipy.special import softmax
 from top2vec import Top2Vec
+from top2vec.Top2Vec import default_tokenizer
 from wordcloud import WordCloud
 import jieba
 from sudachipy import dictionary, tokenizer
@@ -25,6 +26,27 @@ class BaseModel(object):
         self.ch_font_path = '../data/fonts/chinese.simhei.ttf'
         self.topic_name_list = None
         self.viz_df:Optional[pd.DataFrame] = None
+
+    def query_to_vec(self, query):
+        self.top2vec_model._validate_query(query)
+        # self._validate_num_docs(num_docs)
+
+        if self.top2vec_model.embedding_model != "doc2vec":
+            query_vec = self.top2vec_model._embed_query(query)
+
+        else:
+            tokenizer = self.tokenizer
+            # if tokenizer is not passed use default
+            if self.tokenizer is None:
+                tokenizer = default_tokenizer
+
+            tokenized_query = tokenizer(query)
+
+            query_vec = self.top2vec_model.model.infer_vector(doc_words=tokenized_query,
+                                                              alpha=0.025,
+                                                              min_alpha=0.01,
+                                                              epochs=100)
+        return query_vec
 
     @property
     def viz_path(self):

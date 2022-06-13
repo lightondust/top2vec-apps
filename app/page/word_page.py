@@ -3,7 +3,7 @@ import streamlit as st
 
 
 class WordPage(BasePage):
-    title = 'Search Word'
+    title = 'Word Page'
 
     def __init__(self, app_data, **kwargs):
         super().__init__(app_data, **kwargs)
