@@ -41,6 +41,7 @@ class BasePage(ABC):
         self.num_res = int(self.num_res)
 
         if self.select_model():
+            st.markdown('#### total topic no: {}'.format(self.topic_no))
             func = st.radio('function:', [''] + list(self.function_map.keys()), horizontal=True)
             func = self.app_url.sync_variable(self.function_url_key, func, '')
             st.markdown('### function {}'.format(func))
@@ -67,5 +68,4 @@ class BasePage(ABC):
             self.topic_name_list = self.model.topic_name_list
             self.topic_df = pd.DataFrame(zip(self.topic_name_list, self.top2vec_model.topic_sizes),
                                          columns=['name', 'topic_size'])
-            st.markdown('#### total topic no: {}'.format(self.topic_no))
             return self.model_name

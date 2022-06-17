@@ -149,6 +149,16 @@ class NewsGroup20Model(BaseModel):
         '''
 
 
+class W2VCitation(BaseModel):
+
+    def __init__(self):
+        super().__init__()
+        self.path = '../data/models/w2v_citation.model'
+        self.info = '''
+        learned on papers which cite the word2vec paper [link](https://arxiv.org/abs/1301.3781)
+        '''
+
+
 class LivedoorModel(BaseModel):
 
     def __init__(self):
@@ -280,5 +290,6 @@ model_class_map = {
     # 'ch': ChOtModel,
     # 'ch fix 500': ChOtFix500Model,
     'livedoor news dataset': LivedoorModel,
-    '20 news group model': NewsGroup20Model
+    '20 news group model': NewsGroup20Model,
+    'arxiv papers': W2VCitation,
 }
