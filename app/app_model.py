@@ -174,22 +174,37 @@ class LivedoorModel(BaseModel):
         self._view_document(doc_id, full_doc=False)
 
 
-class YouhouModel(BaseModel):
+class JpModel(BaseModel):
 
     def __init__(self):
         super().__init__()
-        self.path = '../data/models/youhou_norm_form.model'
+        self.path = '../data/models/yutura.model'
+        # self.path = '../data/models/twitter.model'
+        # self.path = '../data/models/blockchain_biz.model'
         self.tokenizer = jp_tokenizer
         self.font_path = self.jp_font_path
 
 
-class YouhouNounStopModel(BaseModel):
+class JpNounStopModel(JpModel):
 
     def __init__(self):
         super().__init__()
         self.path = '../data/models/youhou_norm_noun_stopword.model'
         self.tokenizer = jp_tokenizer_noun
-        self.font_path = self.jp_font_path
+
+
+class YouhouModel(JpModel):
+
+    def __init__(self):
+        super().__init__()
+        self.path = '../data/models/youhou_norm_form.model'
+
+
+class YouhouNounStopModel(JpNounStopModel):
+
+    def __init__(self):
+        super().__init__()
+        self.path = '../data/models/youhou_norm_noun_stopword.model'
 
 
 class ChOtFix500Model(BaseModel):
@@ -287,9 +302,10 @@ class SudachiTokenizer(object):
 model_class_map = {
     # 'youho': YouhouModel,
     # 'youho_noun_stop': YouhouNounStopModel,
+    'jpmodel': JpModel,
     # 'ch': ChOtModel,
     # 'ch fix 500': ChOtFix500Model,
-    'livedoor news dataset': LivedoorModel,
+    # 'livedoor news dataset': LivedoorModel,
     '20 news group model': NewsGroup20Model,
     'arxiv papers': W2VCitation,
 }

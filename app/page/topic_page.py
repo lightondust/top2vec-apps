@@ -21,7 +21,8 @@ class TopicPage(BasePage):
         df = self.topic_df.copy(deep=True)
         fig = px.bar(df, x='name', y='topic_size')
         st.plotly_chart(fig)
-        df.loc[df.topic_size < df.topic_size.iloc[20], 'name'] = 'other'
+        if df.shape[0] > 20:
+            df.loc[df.topic_size < df.topic_size.iloc[19], 'name'] = 'other'
         fig = px.pie(df, values='topic_size', names='name')
         st.plotly_chart(fig)
         st.dataframe(self.topic_df)

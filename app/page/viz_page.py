@@ -22,7 +22,7 @@ class VizPage(BasePage):
 
             document_selected = st.multiselect('document:', [''] + list(self.top2vec_model.document_ids))
             v_df = self.model.viz_df.copy(deep=True)
-            v_df['size'] = v_df['score']
+            v_df['size'] = v_df['score'].apply(lambda x: max(x, 0.1))
             v_df['color1'] = v_df.topic_id.apply(lambda x: True if x == topic_idx_selected else False)
             v_df['color2'] = v_df.name.apply(lambda x: True if x in [str(d) for d in document_selected] else False)
             v_df['selected'] = (v_df.color1 + v_df.color2).apply(lambda x: True if x > 0 else False)
