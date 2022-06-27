@@ -13,15 +13,15 @@ class AdvancedSearchPage(BasePage):
         self.vecs_tar = []
 
     def run(self):
-        super().run()
+        self.title_comp = st.empty()
+        self.num_res = st.slider('number of results:', 0, self.num_res_max, 10, 1)
+        self.num_res = int(self.num_res)
+        self.run_model_process()
 
         if self.model:
             topic_page = TopicPage(self.app_data, app_url=self.app_url, model_name=self.model_name)
             document_page = DocumentPage(self.app_data, app_url=self.app_url, model_name=self.model_name)
-            vecs_src = []
-            # search_by = st.radio('search by:', ['', 'topics', 'words', 'documents', 'text'], horizontal=True)
 
-            # if search_by == 'topics':
             topic_name_selected = st.multiselect('topics:', self.model.topic_name_list)
             topic_weight = st.slider('topic weight', 0., 10.0, 1.0, 0.1)
             # topic_idx_selected = self.topic_name_list.index(topic_name_selected)
@@ -35,13 +35,11 @@ class AdvancedSearchPage(BasePage):
             else:
                 topic_vecs_src = []
 
-            # elif search_by == 'words':
             words_selected = st.multiselect('words:', self.word_list)
             word_weight = st.slider('word weight', 0., 10.0, 1.0, 0.1)
             word_idx_selected = [self.top2vec_model.word_indexes[t] for t in words_selected]
             word_vecs_src = [word_weight * self.top2vec_model.word_vectors[i] for i in word_idx_selected]
 
-            # elif search_by == 'documents':
             document_ids_selected = st.multiselect('documents::', self.top2vec_model.document_ids)
             document_idx_selected = [self.top2vec_model.doc_id2index[t] for t in document_ids_selected]
             document_weight = st.slider('document weight', 0., 10.0, 1.0, 0.1)
@@ -50,7 +48,6 @@ class AdvancedSearchPage(BasePage):
                 for d_id in document_ids_selected:
                     st.markdown('{}: {}'.format(d_id, document_page.document_link(d_id)))
 
-            # elif search_by == 'text':
             text_documents = st.text_input('text:')
             text_weight = st.slider('text weight', 0., 10.0, 1.0, 0.1)
             if text_documents:

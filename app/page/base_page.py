@@ -39,19 +39,24 @@ class BasePage(ABC):
         self.title_comp = st.empty()
         self.num_res = st.slider('number of results:', 0, self.num_res_max, 10, 1)
         self.num_res = int(self.num_res)
+        self.run_model_process()
+        self.switch_functions()
 
-        if self.select_model():
+    def run_model_process(self):
+        self.select_model()
+        if self.model:
+            st.sidebar.markdown(self.model.info)
+
+        st.sidebar.markdown('[source code](https://github.com/lightondust/top2vec-apps)')
+
+    def switch_functions(self):
+        if self.model:
             st.markdown('#### total topic no: {}'.format(self.topic_no))
             func = st.radio('function:', [''] + list(self.function_map.keys()), horizontal=True)
             func = self.app_url.sync_variable(self.function_url_key, func, '')
             st.markdown('### function {}'.format(func))
             if func in self.function_map:
                 self.function_map[func]()
-
-        if self.model:
-            st.sidebar.markdown(self.model.info)
-
-        st.sidebar.markdown('[source code](https://github.com/lightondust/top2vec-apps)')
 
     def select_model(self):
         model_name_selected = st.selectbox('model:', [''] + list(self.app_data.model_map.keys()))

@@ -11,21 +11,10 @@ class TopicPage(BasePage):
         super().__init__(app_data, **kwargs)
         self.num_res = None
         self.function_map = {
-            self.function_topic_stats_key: self.topic_stats,
             self.function_topic_detail_key: self.view_topic,
             self.function_search_by_words_key: self.search_topic_by_words,
             self.function_search_by_text_key: self.search_topic_by_text,
         }
-
-    def topic_stats(self):
-        df = self.topic_df.copy(deep=True)
-        fig = px.bar(df, x='name', y='topic_size')
-        st.plotly_chart(fig)
-        if df.shape[0] > 20:
-            df.loc[df.topic_size < df.topic_size.iloc[19], 'name'] = 'other'
-        fig = px.pie(df, values='topic_size', names='name')
-        st.plotly_chart(fig)
-        st.dataframe(self.topic_df)
 
     def topic_info(self, topic_selected):
         fig = self.model.generate_topic_wordcloud(topic_selected)

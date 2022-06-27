@@ -3,6 +3,7 @@ import streamlit as st
 from app_url import AppURL
 from page.main_page import MainPage
 from page.topic_page import TopicPage
+from page.topic_stats_page import TopicStatsPage
 from page.search_page import SearchPage
 from page.document_page import DocumentPage
 from page.advanced_search_page import AdvancedSearchPage
@@ -26,6 +27,7 @@ def _get_app_data(page_class, model_class_map):
 
 page_class_list = [
     MainPage,
+    TopicStatsPage,
     SearchPage,
     AdvancedSearchPage,
     VizPage,

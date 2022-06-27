@@ -13,7 +13,10 @@ class SearchPage(BasePage):
         self.vecs_tar = []
 
     def run(self):
-        super().run()
+        self.title_comp = st.empty()
+        self.num_res = st.slider('number of results:', 0, self.num_res_max, 10, 1)
+        self.num_res = int(self.num_res)
+        self.run_model_process()
 
         if self.model:
             topic_page = TopicPage(self.app_data, app_url=self.app_url, model_name=self.model_name)
