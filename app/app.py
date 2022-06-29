@@ -7,6 +7,7 @@ from page.topic_stats_page import TopicStatsPage
 from page.search_page import SearchPage
 from page.document_page import DocumentPage
 from page.advanced_search_page import AdvancedSearchPage
+from page.traveling_page import TravelingPage
 from page.viz_page import VizPage
 from page.word_page import WordPage
 from app_data import get_app_data
@@ -27,8 +28,9 @@ def _get_app_data(page_class, model_class_map):
 
 page_class_list = [
     MainPage,
-    TopicStatsPage,
+    TravelingPage,
     SearchPage,
+    TopicStatsPage,
     AdvancedSearchPage,
     VizPage,
     TopicPage,

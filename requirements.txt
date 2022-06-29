@@ -105,6 +105,7 @@ sortedcontainers==2.4.0
 soupsieve==2.3.2.post1
 stack-data==0.2.0
 streamlit==1.10.0
+streamlit-plotly-events==0.0.6
 streamlit-wordcloud==0.1.0
 SudachiDict-core==20211220
 SudachiPy==0.6.3
