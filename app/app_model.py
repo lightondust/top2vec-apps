@@ -82,8 +82,8 @@ class BaseModel(object):
     def top_display(self, top_id):
         return '{}_{}'.format(top_id, '_'.join(self.top2vec_model.topic_words[top_id][:3]))
 
-    def view_document(self, doc_id):
-        self._view_document(doc_id)
+    def view_document(self, doc_id, **kwargs):
+        self._view_document(doc_id, **kwargs)
 
     def _view_document(self, doc_id, full_doc=True):
         doc_idx = self.top2vec_model.doc_id2index[doc_id]
