@@ -12,7 +12,8 @@ class TravelingPage(BasePage):
         super().__init__(app_data, **kwargs)
         self.num_res_max = 1000
 
-    def center_from_document_id(self, doc_id, v_df):
+    @staticmethod
+    def center_from_document_id(doc_id, v_df):
         center_item = v_df[v_df['name'] == doc_id]
         center = ()
         if center_item.shape[0]:
@@ -55,12 +56,23 @@ class TravelingPage(BasePage):
         return fig, df_view
 
     def plot_at_center(self, center, fig_el, v_df, x_l, y_l, center_item=pd.DataFrame(), if_display_text=False):
-        # fig_el.empty()
         fig, df_view = self.plot_at_center_plotly_fig(center, v_df, x_l, y_l, center_item=center_item,
                                                       if_display_text=if_display_text)
         with fig_el.container():
             ev = plotly_events(fig)
         return ev, df_view
+
+    @staticmethod
+    def display_range_and_center(df, zoom):
+        scale = 1/(2**zoom)
+        x_range = df.x.min(), df.x.max()
+        x_l = x_range[1] - x_range[0]
+        x_l *= scale
+        y_range = df.y.min(), df.y.max()
+        y_l = y_range[1] - y_range[0]
+        y_l *= scale
+        center_default = ((x_range[1] - x_range[0]) / 2, (y_range[1] - y_range[0]) / 2)
+        return x_l, y_l, x_range, y_range, center_default
 
     def run(self):
         self.title_comp = st.title(TravelingPage.title)
@@ -79,51 +91,39 @@ class TravelingPage(BasePage):
             v_df['color'] = v_df.name.apply(lambda x: 'red' if x == document_id_selected else 'blue')
             v_df['size'] = v_df['score'].apply(lambda x: max(x, 0.1))
 
-            scale = st.slider('zoom:', 0.01, 1., 0.5, 0.01)
+            zoom = st.slider('zoom:', -1., 10., 1., 0.5, '2**%f')
             fig_el = st.empty()
             if_display_text = st.checkbox('show text')
 
-            x_total_range = v_df.x.min(), v_df.x.max()
-            x_l = x_total_range[1] - x_total_range[0]
-            x_l *= scale
-            y_total_range = v_df.y.min(), v_df.y.max()
-            y_l = y_total_range[1] - y_total_range[0]
-            y_l *= scale
-            center_default = ((x_total_range[1] - x_total_range[0])/2, (y_total_range[1] - y_total_range[0])/2)
+            x_l, y_l, x_total_range, y_total_range, center_default = self.display_range_and_center(v_df, zoom)
 
-            center_doc, center_item = self.center_from_document_id(document_id_selected, v_df)
+            _, center_item = self.center_from_document_id(document_id_selected, v_df)
             center = self.app_url.sync_variable_list('center', [], center_default)
             center = [float(c) for c in center]
-            # st.write(center)
 
             ev, df_view = self.plot_at_center(center, fig_el, v_df, x_l, y_l, center_item=center_item, if_display_text=if_display_text)
 
             if ev:
-                # st.write(ev)
                 point = (ev[0]['x'], ev[0]['y'])
-                # st.write(point)
                 df_view['x_diff'] = df_view.x - point[0]
                 df_view['y_diff'] = df_view.y - point[1]
                 df_view['dis_diff'] = abs(df_view['x_diff']) + abs(df_view['y_diff'])
                 df_view = df_view.sort_values('dis_diff')
                 df_sel = df_view.iloc[0:1].copy()
+                df_sel['text'] = ''
                 if df_sel.iloc[0]['node_type'] == 'document':
                     doc_id_sel = df_sel['name'].iloc[0]
                     doc_idx = self.model.top2vec_model.doc_id2index[doc_id_sel]
                     doc = self.top2vec_model.documents[doc_idx]
-                df_sel['text'] = [doc]
-                st.write(df_sel)
-                # st.write(pd.DataFrame([doc]))
+                    df_sel['text'] = [doc]
+                st.write(df_sel[['name', 'text', 'x', 'y', 'score', 'topic_name']])
 
-                # st.write(df_view.iloc[ev[0]['pointIndex']: ev[0]['pointIndex']+1])
                 if_move_center = st.button('move to above point')
 
-                # st.write(if_move_center)
                 if if_move_center:
                     self.app_url.sync_variable_list('center', point, ())
                     ev, df_view = self.plot_at_center(point, fig_el, v_df, x_l, y_l, center_item=center_item,
                                                       if_display_text=if_display_text)
-
 
             st.write('no of displayed items:', df_view.shape[0])
             st.write(document_id_selected)

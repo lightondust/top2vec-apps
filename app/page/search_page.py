@@ -1,3 +1,6 @@
+import pandas as pd
+from plotly import express as px
+
 from page.base_page import BasePage
 from page.topic_page import TopicPage
 from page.document_page import DocumentPage
@@ -53,12 +56,18 @@ class SearchPage(BasePage):
                 self.vec_src = self.top2vec_model._get_combined_vec(vecs_src, [])
 
             search_for = st.radio('search for:', ['', 'topics', 'words', 'documents'], horizontal=True)
+            if_map = st.checkbox('show results map')
             if search_for == 'topics':
                 self.vecs_tar = self.top2vec_model.topic_vectors
                 if vecs_src:
                     idx_list, score_list = self.top2vec_model._search_vectors_by_vector(self.vecs_tar, self.vec_src, num_res=self.num_res)
                     topic_idx = idx_list
                     topic_scores = score_list
+
+                    topic_name_list = [self.model.topic_name_list[i] for i in topic_idx]
+                    if if_map:
+                        self.viz_selected_documents(topic_name_list)
+
                     topic_words = [self.top2vec_model.topic_words[i] for i in topic_idx]
                     topic_page.view_topic_list(topic_idx, topic_words, topic_scores)
             elif search_for == 'words':
@@ -73,7 +82,40 @@ class SearchPage(BasePage):
                 if vecs_src:
                     idx_list, score_list = self.top2vec_model._search_vectors_by_vector(self.vecs_tar, self.vec_src, num_res=self.num_res)
                     doc_id_list = [self.top2vec_model.document_ids[i] for i in idx_list]
+
+                    if if_map:
+                        self.viz_selected_documents(doc_id_list)
+
                     documents = [self.top2vec_model.documents[i] for i in idx_list]
                     document_page.view_document_list(documents, score_list, doc_id_list)
 
-
+    def viz_selected_documents(self, doc_id_list):
+        v_df = self.model.viz_df.copy(deep=True)
+        v_doc = v_df[v_df['name'].isin(doc_id_list)]
+        v_doc['opacity'] = 1.
+        v_doc['display_text'] = ''
+        v_doc['selected'] = True
+        v_top = v_df[v_df['node_type'] == 'topic']
+        v_top['opacity'] = 0.3
+        v_top['display_text'] = v_top.name
+        v_top['selected'] = False
+        v_view = pd.concat([v_doc, v_top])
+        fig = px.scatter(v_view,
+                         title='results map(global)',
+                         x='x', y='y',
+                         color='selected',
+                         # text='display_text',
+                         opacity=v_view.opacity,
+                         symbol='selected',
+                         hover_data=['name', 'topic_id', 'topic_name']
+                         )
+        st.plotly_chart(fig)
+        fig = px.scatter(v_doc,
+                         title='results map(local)',
+                         x='x', y='y',
+                         color='node_type',
+                         symbol='node_type',
+                         hover_data=['name', 'topic_id', 'topic_name']
+                         )
+        st.plotly_chart(fig)
+        # st.write(v_view)

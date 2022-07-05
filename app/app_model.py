@@ -1,3 +1,4 @@
+from plotly import express as px
 from typing import List
 import japanize_matplotlib
 from matplotlib import pyplot as plt
@@ -138,6 +139,7 @@ class BaseModel(object):
         return self.wordcloud(word_score_dict, **kwargs)
 
 
+
 class NewsGroup20Model(BaseModel):
 
     def __init__(self):
@@ -191,6 +193,20 @@ class JpNounStopModel(JpModel):
         super().__init__()
         self.path = '../data/models/youhou_norm_noun_stopword.model'
         self.tokenizer = jp_tokenizer_noun
+
+
+class YouturaModel(JpModel):
+
+    def __init__(self):
+        super().__init__()
+        self.path = '../data/models/yutura.model'
+
+
+class TwitterModel(JpModel):
+
+    def __init__(self):
+        super().__init__()
+        self.path = '../data/models/twitter.model'
 
 
 class YouhouModel(JpModel):
@@ -302,10 +318,12 @@ class SudachiTokenizer(object):
 model_class_map = {
     # 'youho': YouhouModel,
     # 'youho_noun_stop': YouhouNounStopModel,
-    'jpmodel': JpModel,
+    # 'jpmodel': JpModel,
+    'twitter': TwitterModel,
+    'yutura': YouturaModel,
     # 'ch': ChOtModel,
     # 'ch fix 500': ChOtFix500Model,
     # 'livedoor news dataset': LivedoorModel,
-    '20 news group model': NewsGroup20Model,
+    # '20 news group model': NewsGroup20Model,
     'arxiv papers': W2VCitation,
 }
