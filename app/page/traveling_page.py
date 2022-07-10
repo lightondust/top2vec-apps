@@ -35,7 +35,8 @@ class TravelingPage(BasePage):
 
         additional_args = {}
         if if_display_text:
-            additional_args['text'] = 'name'
+            df_view = self.model.pickup_points(df_view, 30, 30)
+            additional_args['text'] = 'display_text'
         fig = px.scatter(df_view,
                          x='x',
                          y='y',
@@ -44,6 +45,7 @@ class TravelingPage(BasePage):
                          range_x=x_range,
                          range_y=y_range,
                          size='size',
+                         size_max=10,
                          symbol='node_type',
                          hover_data=['name', 'topic_id', 'topic_name'],
                          color_discrete_map={'red': 'red', 'blue': 'blue'},
@@ -51,8 +53,8 @@ class TravelingPage(BasePage):
                              'topic': 'circle-open',
                              'document': 'x-open'
                          })
-        size = {'width': 1200, 'height': 900}
-        fig.update_layout(**size)
+        # size = {'width': 1400, 'height': 900}
+        # fig.update_layout(**size)
         return fig, df_view
 
     def plot_at_center(self, center, fig_el, v_df, x_l, y_l, center_item=pd.DataFrame(), if_display_text=False):
@@ -113,6 +115,7 @@ class TravelingPage(BasePage):
                 df_sel['text'] = ''
                 if df_sel.iloc[0]['node_type'] == 'document':
                     doc_id_sel = df_sel['name'].iloc[0]
+                    doc_id_sel = self.model.transform_document_id(doc_id_sel)
                     doc_idx = self.model.top2vec_model.doc_id2index[doc_id_sel]
                     doc = self.top2vec_model.documents[doc_idx]
                     df_sel['text'] = [doc]

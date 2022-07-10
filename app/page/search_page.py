@@ -90,12 +90,13 @@ class SearchPage(BasePage):
                     document_page.view_document_list(documents, score_list, doc_id_list)
 
     def viz_selected_documents(self, doc_id_list):
+        doc_id_list = [str(id_) for id_ in doc_id_list]
         v_df = self.model.viz_df.copy(deep=True)
-        v_doc = v_df[v_df['name'].isin(doc_id_list)]
+        v_doc = v_df[v_df['name'].isin(doc_id_list)].copy()
         v_doc['opacity'] = 1.
         v_doc['display_text'] = ''
         v_doc['selected'] = True
-        v_top = v_df[v_df['node_type'] == 'topic']
+        v_top = v_df[v_df['node_type'] == 'topic'].copy()
         v_top['opacity'] = 0.3
         v_top['display_text'] = v_top.name
         v_top['selected'] = False
