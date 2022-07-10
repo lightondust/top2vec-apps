@@ -81,12 +81,13 @@ class BaseModel(object):
         self.viz_df.node_type = self.viz_df.node_type.astype('category')
 
     @staticmethod
-    def pickup_points(df, split_no_x=50, split_no_y=50, use_label='name'):
-        x_range = (df.x.min(), df.x.max())
-        y_range = (df.y.min(), df.y.max())
+    def pickup_points(df: pd.DataFrame, split_no_x=50, split_no_y=50, x_range_l=False, y_range_l=False, text_label='name'):
+        if not(x_range_l and y_range_l):
+            x_range_l = df.x.max() - df.x.min()
+            y_range_l = df.y.max() - df.y.min()
 
-        x_l = (x_range[1] - x_range[0]) / split_no_x
-        y_l = (y_range[1] - y_range[0]) / split_no_y
+        x_l = x_range_l / split_no_x
+        y_l = y_range_l / split_no_y
 
         viz_df_selected = pd.DataFrame()
         viz_df_st = df.sort_values('score', ascending=False)
@@ -101,11 +102,11 @@ class BaseModel(object):
             if not viz_df_st.shape[0]:
                 break
 
-        viz_df_ot = df[~(df.name.isin(viz_df_selected.name.to_list()))].copy()
+        viz_df_ot = df[~(df.name.isin(viz_df_selected['name'].to_list()))].copy()
 
         viz_df_ot['display_text'] = ''
         viz_df_selected = viz_df_selected.copy()
-        viz_df_selected['display_text'] = viz_df_selected[use_label]
+        viz_df_selected['display_text'] = viz_df_selected[text_label]
 
         res_df = pd.concat([viz_df_ot, viz_df_selected])
         return res_df
