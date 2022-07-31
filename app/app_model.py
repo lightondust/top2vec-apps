@@ -81,7 +81,9 @@ class BaseModel(object):
         self.viz_df.node_type = self.viz_df.node_type.astype('category')
 
     @staticmethod
-    def pickup_points(df: pd.DataFrame, split_no_x=50, split_no_y=50, x_range_l=False, y_range_l=False, text_label='name'):
+    def pickup_points(df: pd.DataFrame, split_no_x=50, split_no_y=50, x_range_l=False, y_range_l=False,
+                      use_text_label='name',
+                      export_text_label='display_text'):
         if not(x_range_l and y_range_l):
             x_range_l = df.x.max() - df.x.min()
             y_range_l = df.y.max() - df.y.min()
@@ -104,9 +106,9 @@ class BaseModel(object):
 
         viz_df_ot = df[~(df.name.isin(viz_df_selected['name'].to_list()))].copy()
 
-        viz_df_ot['display_text'] = ''
+        viz_df_ot[export_text_label] = ''
         viz_df_selected = viz_df_selected.copy()
-        viz_df_selected['display_text'] = viz_df_selected[text_label]
+        viz_df_selected[export_text_label] = viz_df_selected[use_text_label]
 
         res_df = pd.concat([viz_df_ot, viz_df_selected])
         return res_df

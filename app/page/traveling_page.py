@@ -12,6 +12,20 @@ class TravelingPage(BasePage):
         super().__init__(app_data, **kwargs)
         self.num_res_max = 1000
 
+    def pickup_points(self, *args, **kwargs):
+        return self.model.pickup_points(*args, **kwargs)
+
+    def display_item(self, df_sel):
+        df_sel['text'] = ''
+        if df_sel.iloc[0]['node_type'] == 'document':
+            doc_id_sel = df_sel['name'].iloc[0]
+            doc_id_sel = self.model.transform_document_id(doc_id_sel)
+            doc_idx = self.model.top2vec_model.doc_id2index[doc_id_sel]
+            doc = self.top2vec_model.documents[doc_idx]
+            df_sel['text'] = [doc]
+        st.write(df_sel[['name', 'text', 'x', 'y', 'score', 'topic_name']])
+        return df_sel
+
     @staticmethod
     def item_df_from_document_ids(doc_ids, v_df):
         center_item_df = v_df[v_df['name'].isin(doc_ids)]
@@ -30,7 +44,7 @@ class TravelingPage(BasePage):
 
         additional_args = {}
         if if_display_text:
-            df_view = self.model.pickup_points(df_view, 30, 30, x_range_l=x_l, y_range_l=y_l)
+            df_view = self.pickup_points(df=df_view, split_no_x=30, split_no_y=30, x_range_l=x_l, y_range_l=y_l)
             additional_args['text'] = 'display_text'
 
         if highlight_item_df.shape[0]:
@@ -58,15 +72,15 @@ class TravelingPage(BasePage):
         return fig, df_view
 
     def plot_at_center(self, center, fig_el, v_df, x_l, y_l,
-                       document_ids_selected,
+                       items_selected,
                        center_item_doc_id='',
                        if_display_text=False):
         center_item_doc_id = self.app_url.sync_variable('center_item', center_item_doc_id, '')
-        document_ids_highlight = document_ids_selected + [center_item_doc_id]
+        items_hightlight= items_selected + [center_item_doc_id]
 
-        v_df['color'] = v_df.name.apply(lambda x: 'red' if x in document_ids_highlight else 'blue')
+        v_df['color'] = v_df.name.apply(lambda x: 'red' if x in items_hightlight else 'blue')
         v_df['size'] = v_df['score'].apply(lambda x: max(x, 0.1))
-        highlight_item_df = self.item_df_from_document_ids(document_ids_highlight, v_df)
+        highlight_item_df = self.item_df_from_document_ids(items_hightlight, v_df)
 
         fig, df_view = self.plot_at_center_plotly_fig(center, v_df, x_l, y_l, highlight_item_df=highlight_item_df,
                                                       if_display_text=if_display_text)
@@ -86,59 +100,53 @@ class TravelingPage(BasePage):
         center_default = ((x_range[1] - x_range[0]) / 2, (y_range[1] - y_range[0]) / 2)
         return x_l, y_l, x_range, y_range, center_default
 
+    def travel_components(self, v_df):
+        doc_el = st.empty()
+        items_selected = doc_el.multiselect('hightlight items:', [''] + list(v_df.name.to_list()))
+        items_selected = [str(i) for i in items_selected]
+
+        self.num_res = st.slider('number of results:', 0, self.num_res_max, 50, 1)
+        self.num_res = int(self.num_res)
+
+        zoom = st.slider('zoom:', -1., 10., 1., 0.5, '2**%f')
+        fig_el = st.empty()
+        if_display_text = st.checkbox('show text')
+
+        x_l, y_l, x_total_range, y_total_range, center_default = self.display_range_and_center(v_df, zoom)
+        center = self.app_url.sync_variable_list('center', [], center_default)
+        center = [float(c) for c in center]
+
+        ev, df_view = self.plot_at_center(center, fig_el, v_df, x_l, y_l,
+                                          items_selected=items_selected,
+                                          center_item_doc_id='',
+                                          if_display_text=if_display_text)
+
+        if ev:
+            point = (ev[0]['x'], ev[0]['y'])
+            df_view['x_diff'] = df_view.x - point[0]
+            df_view['y_diff'] = df_view.y - point[1]
+            df_view['dis_diff'] = abs(df_view['x_diff']) + abs(df_view['y_diff'])
+            df_view = df_view.sort_values('dis_diff')
+            df_sel = df_view.iloc[0:1].copy()
+
+            df_sel = self.display_item(df_sel)
+            if_move_center = st.button('move to above point')
+
+            if if_move_center:
+                center_item_doc_id = df_sel['name'].iloc[0]
+                self.app_url.sync_variable_list('center', point, ())
+                ev, df_view = self.plot_at_center(point, fig_el, v_df, x_l, y_l,
+                                                  items_selected=items_selected,
+                                                  center_item_doc_id=center_item_doc_id,
+                                                  if_display_text=if_display_text)
+
+        st.write('no of displayed items:', df_view.shape[0])
+        st.write(df_view)
+
     def run(self):
         self.title_comp = st.title(TravelingPage.title)
         self.run_model_process()
 
         if self.model:
             v_df = self.model.viz_df.copy(deep=True)
-
-            doc_el = st.empty()
-            document_ids_selected = doc_el.multiselect('highlight document:', [''] + list(self.top2vec_model.document_ids))
-            document_ids_selected = [str(d) for d in document_ids_selected]
-
-            self.num_res = st.slider('number of results:', 0, self.num_res_max, 50, 1)
-            self.num_res = int(self.num_res)
-
-            zoom = st.slider('zoom:', -1., 10., 1., 0.5, '2**%f')
-            fig_el = st.empty()
-            if_display_text = st.checkbox('show text')
-
-            x_l, y_l, x_total_range, y_total_range, center_default = self.display_range_and_center(v_df, zoom)
-            center = self.app_url.sync_variable_list('center', [], center_default)
-            center = [float(c) for c in center]
-
-            ev, df_view = self.plot_at_center(center, fig_el, v_df, x_l, y_l,
-                                              document_ids_selected=document_ids_selected,
-                                              center_item_doc_id='',
-                                              if_display_text=if_display_text)
-
-            if ev:
-                point = (ev[0]['x'], ev[0]['y'])
-                df_view['x_diff'] = df_view.x - point[0]
-                df_view['y_diff'] = df_view.y - point[1]
-                df_view['dis_diff'] = abs(df_view['x_diff']) + abs(df_view['y_diff'])
-                df_view = df_view.sort_values('dis_diff')
-                df_sel = df_view.iloc[0:1].copy()
-                df_sel['text'] = ''
-                if df_sel.iloc[0]['node_type'] == 'document':
-                    doc_id_sel = df_sel['name'].iloc[0]
-                    doc_id_sel = self.model.transform_document_id(doc_id_sel)
-                    doc_idx = self.model.top2vec_model.doc_id2index[doc_id_sel]
-                    doc = self.top2vec_model.documents[doc_idx]
-                    df_sel['text'] = [doc]
-                st.write(df_sel[['name', 'text', 'x', 'y', 'score', 'topic_name']])
-                if_move_center = st.button('move to above point')
-
-                if if_move_center:
-                    center_item_doc_id = df_sel['name'].iloc[0]
-                    self.app_url.sync_variable_list('center', point, ())
-                    ev, df_view = self.plot_at_center(point, fig_el, v_df, x_l, y_l,
-                                                      document_ids_selected=document_ids_selected,
-                                                      center_item_doc_id=center_item_doc_id,
-                                                      if_display_text=if_display_text)
-
-            st.write('no of displayed items:', df_view.shape[0])
-            # st.write(document_ids_highlight)
-            st.write(df_view)
-
+            self.travel_components(v_df)
