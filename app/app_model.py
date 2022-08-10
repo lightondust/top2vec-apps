@@ -1,3 +1,4 @@
+from app_config import CALCULATE_KEYWORDS_FOR_VIZ
 from plotly import express as px
 from typing import List
 import japanize_matplotlib
@@ -53,7 +54,7 @@ class BaseModel(object):
     def viz_path(self):
         return self.path + '.viz.csv'
 
-    def create_viz_data(self):
+    def create_viz_data(self, cal_keyword=CALCULATE_KEYWORDS_FOR_VIZ):
         if not os.path.exists(self.viz_path):
             u_model = umap.UMAP(metric='cosine')
             doc_vec_u = u_model.fit_transform(self.top2vec_model.document_vectors)
@@ -73,6 +74,17 @@ class BaseModel(object):
             topic_u_embedding_df['topic_id'] = topic_u_embedding_df.topic_id.astype('category')
             topic_u_embedding_df['score'] = 1.
 
+            if cal_keyword:
+                model = self.top2vec_model
+                doc_keywords = []
+                for doc_idx in range(len(model.documents)):
+                    wd_idx, score = model._search_vectors_by_vector(model.word_vectors,
+                                                                    model.document_vectors[doc_idx],
+                                                                    3)
+                    doc_keywords.append(' '.join([model.vocab[i_] for i_ in wd_idx]))
+                doc_df['keywords'] = doc_keywords
+                topic_u_embedding_df['keywords'] = topic_u_embedding_df['name']
+
             viz_df = pd.concat([doc_df, topic_u_embedding_df])
             viz_df.to_csv(self.viz_path)
         self.viz_df = pd.read_csv(self.viz_path, index_col=0)
@@ -81,9 +93,7 @@ class BaseModel(object):
         self.viz_df.node_type = self.viz_df.node_type.astype('category')
 
     @staticmethod
-    def pickup_points(df: pd.DataFrame, split_no_x=50, split_no_y=50, x_range_l=False, y_range_l=False,
-                      use_text_label='name',
-                      export_text_label='display_text'):
+    def pickup_points(df: pd.DataFrame, split_no_x=50, split_no_y=50, x_range_l=False, y_range_l=False):
         if not(x_range_l and y_range_l):
             x_range_l = df.x.max() - df.x.min()
             y_range_l = df.y.max() - df.y.min()
@@ -105,10 +115,24 @@ class BaseModel(object):
                 break
 
         viz_df_ot = df[~(df.name.isin(viz_df_selected['name'].to_list()))].copy()
+        return viz_df_selected, viz_df_ot
 
-        viz_df_ot[export_text_label] = ''
-        viz_df_selected = viz_df_selected.copy()
-        viz_df_selected[export_text_label] = viz_df_selected[use_text_label]
+    def set_text(self, df: pd.DataFrame,
+                 split_no_x=50,
+                 split_no_y=50,
+                 x_range_l=False,
+                 y_range_l=False,
+                 use_text_label='name',
+                 export_text_label='display_text'):
+        viz_df_selected, viz_df_ot = self.pickup_points(df=df,
+                                                        split_no_x=split_no_x,
+                                                        split_no_y=split_no_y,
+                                                        x_range_l=x_range_l,
+                                                        y_range_l=y_range_l)
+        if export_text_label:
+            viz_df_ot[export_text_label] = ''
+            viz_df_selected = viz_df_selected.copy()
+            viz_df_selected[export_text_label] = viz_df_selected[use_text_label]
 
         res_df = pd.concat([viz_df_ot, viz_df_selected])
         return res_df
@@ -119,13 +143,17 @@ class BaseModel(object):
     def view_document(self, doc_id, **kwargs):
         self._view_document(doc_id, **kwargs)
 
+    def document_from_id(self, doc_id):
+        doc_idx = self.top2vec_model.doc_id2index[doc_id]
+        return self.top2vec_model.documents[doc_idx]
+
     def _view_document(self, doc_id, full_doc=True):
         doc_idx = self.top2vec_model.doc_id2index[doc_id]
         top_idx = self.top2vec_model.doc_top[doc_idx]
         top = self.top_display(top_idx)
         top_score = self.top2vec_model.doc_dist[doc_idx]
         st.markdown('topic: {}, score: {}'.format(top, top_score))
-        doc = self.top2vec_model.documents[doc_idx]
+        doc = self.document_from_id(doc_id)
         st.write(doc[:300].replace('\n', ' /// '))
         if full_doc:
             with st.expander('full text'):
